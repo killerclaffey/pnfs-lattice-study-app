@@ -1,0 +1,27 @@
+{
+  "name": "pnf-lattice-study-app",
+  "version": "1.0.0",
+  "description": "An interactive, full-stack educational and simulation suite designed to help engineers, architects, and researchers master **Parallel NFS (pNFS)**, **RFC 8435 Flex Files**, and the **pNFS-Lattice** scale-out metadata architecture.",
+  "main": "take_screenshots.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/killerclaffey/pnfs-lattice-study-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/killerclaffey/pnfs-lattice-study-app/issues"
+  },
+  "homepage": "https://github.com/killerclaffey/pnfs-lattice-study-app#readme",
+  "dependencies": {
+    "playwright": "^1.64.0"
+  }
+}

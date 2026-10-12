@@ -21,6 +21,10 @@ cli:
 test:
     python3 -m unittest discover -s tests -p "test_*.py" -v
 
+# Regenerate high-definition marketing screenshots via Playwright
+screenshot:
+    node take_screenshots.js
+
 # Display architecture summary and technology quick-reference
 info:
     @echo "=========================================================================="
