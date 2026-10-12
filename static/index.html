@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pNFS & pNFS-Lattice Interactive Study Studio</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="theme-dark">
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-badge">2026 NEXT-GEN STORAGE</div>
+        <div class="brand-title">
+          <span class="gradient-text">pNFS</span> & <span class="gradient-text-alt">Lattice</span> Studio
+        </div>
+      </div>
+      <nav class="nav-tabs" id="navTabs">
+        <button class="nav-tab active" data-tab="architecture">Architecture</button>
+        <button class="nav-tab" data-tab="protocol">Protocol Simulator</button>
+        <button class="nav-tab" data-tab="workload">Scale & Bottleneck Lab</button>
+        <button class="nav-tab" data-tab="study">Deep Study</button>
+        <button class="nav-tab" data-tab="flashcards">Flashcards</button>
+        <button class="nav-tab" data-tab="quiz">Exam Quiz</button>
+        <button class="nav-tab" data-tab="terminal">Lattice CLI Sandbox</button>
+        <button class="nav-tab" data-tab="glossary">Glossary</button>
+      </nav>
+      <div class="header-actions">
+        <span class="status-indicator"><span class="dot"></span> Active-Active Cluster Ready</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="main-container">
+
+    <!-- TAB 1: ARCHITECTURE VISUALIZER -->
+    <section id="tab-architecture" class="tab-panel active">
+      <div class="section-intro">
+        <h2>pNFS-Lattice Decoupled Architecture</h2>
+        <p>Click on any layer or component to inspect its internal mechanics, memory model, and transaction contracts.</p>
+      </div>
+
+      <div class="architecture-grid">
+        <!-- Interactive Visual Diagram Canvas/Cards -->
+        <div class="arch-diagram-card card">
+          <div class="arch-layer" id="layer-clients">
+            <div class="layer-header">
+              <span class="layer-tag">Clients (Unmodified Linux)</span>
+              <h4>Linux Kernel pNFS Clients</h4>
+            </div>
+            <div class="layer-nodes">
+              <div class="arch-node client-node" onclick="showArchDetail('client')">
+                <div class="node-icon">💻</div>
+                <div class="node-title">GPU Worker 01</div>
+                <div class="node-sub">nfs_layout_flexfiles</div>
+              </div>
+              <div class="arch-node client-node" onclick="showArchDetail('client')">
+                <div class="node-icon">💻</div>
+                <div class="node-title">GPU Worker 02</div>
+                <div class="node-sub">PyTorch DataLoader</div>
+              </div>
+              <div class="arch-node client-node" onclick="showArchDetail('client')">
+                <div class="node-icon">💻</div>
+                <div class="node-title">Worker 10,000+</div>
+                <div class="node-sub">Standard NFSv4.2</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="arrow-connector">
+            <span class="arrow-label">RPC: COMPOUND (LOOKUP, OPEN, LAYOUTGET) via fs_locations referrals</span>
+            <div class="arrow-line"></div>
+          </div>
+
+          <div class="arch-layer" id="layer-mds">
+            <div class="layer-header">
+              <span class="layer-tag highlight">Lattice Core (Elastic MDS Fleet)</span>
+              <h4>Active-Active User-Space Metadata Daemons (<code>lattice-pnfs</code>)</h4>
+            </div>
+            <div class="layer-nodes">
+              <div class="arch-node mds-node" onclick="showArchDetail('mds0')">
+                <div class="node-icon">⚡</div>
+                <div class="node-title">MDS Node 01</div>
+                <div class="node-sub">Wave-2 Heap Scratch</div>
+              </div>
+              <div class="arch-node mds-node" onclick="showArchDetail('mds1')">
+                <div class="node-icon">⚡</div>
+                <div class="node-title">MDS Node 02</div>
+                <div class="node-sub">Fused Ops Dispatch</div>
+              </div>
+              <div class="arch-node mds-node" onclick="showArchDetail('mdsN')">
+                <div class="node-icon">⚡</div>
+                <div class="node-title">MDS Node N...</div>
+                <div class="node-sub">Horizontal Scale-Out</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="arrow-connector">
+            <span class="arrow-label">Transactional C ABI Shim (catalogue_rondb_shim.cpp) &bull; Single NDB Txn per op</span>
+            <div class="arrow-line"></div>
+          </div>
+
+          <div class="arch-layer" id="layer-catalogue">
+            <div class="layer-header">
+              <span class="layer-tag success">MD Catalog Authority</span>
+              <h4>RonDB Cluster (Shared In-Memory & NVMe ACID Metadata Store)</h4>
+            </div>
+            <div class="layer-nodes rondb-layout">
+              <div class="arch-node db-node" onclick="showArchDetail('rondb_tables')">
+                <div class="node-icon">🗄️</div>
+                <div class="node-title">inodes & dirents</div>
+                <div class="node-sub">interpretedUpdateTuple</div>
+              </div>
+              <div class="arch-node db-node" onclick="showArchDetail('stripe_maps')">
+                <div class="node-icon">🗺️</div>
+                <div class="node-title">stripe_maps</div>
+                <div class="node-sub">DS Placement Maps</div>
+              </div>
+              <div class="arch-node db-node" onclick="showArchDetail('gc_queue')">
+                <div class="node-icon">🧹</div>
+                <div class="node-title">gc_queue</div>
+                <div class="node-sub">Asynchronous Unlinks</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="arrow-connector dual-path">
+            <div class="left-arrow">
+              <span class="arrow-label">MDS: Health Monitoring & Layout Grants</span>
+              <div class="arrow-line"></div>
+            </div>
+            <div class="right-arrow">
+              <span class="arrow-label special">Direct Client ↔ DS Data Stream (NFSv3 / RoCE RDMA)</span>
+              <div class="arrow-line bypass"></div>
+            </div>
+          </div>
+
+          <div class="arch-layer" id="layer-ds">
+            <div class="layer-header">
+              <span class="layer-tag">Data Server Control & Storage Plane</span>
+              <h4>Unmodified Commodity Linux Data Servers (<code>knfsd</code>)</h4>
+            </div>
+            <div class="layer-nodes">
+              <div class="arch-node ds-node" onclick="showArchDetail('ds0')">
+                <div class="node-icon">💾</div>
+                <div class="node-title">DS-01 (NVMe)</div>
+                <div class="node-sub">Stripe 0 (TCP/RDMA)</div>
+              </div>
+              <div class="arch-node ds-node" onclick="showArchDetail('ds1')">
+                <div class="node-icon">💾</div>
+                <div class="node-title">DS-02 (NVMe)</div>
+                <div class="node-sub">Stripe 1 (TCP/RDMA)</div>
+              </div>
+              <div class="arch-node ds-node" onclick="showArchDetail('dsN')">
+                <div class="node-icon">💾</div>
+                <div class="node-title">DS-N (NVMe)</div>
+                <div class="node-sub">Stripe N (Parallel I/O)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail Inspector Panel -->
+        <div class="arch-info-card card" id="archDetailPanel">
+          <div class="card-header">
+            <span class="badge">Architecture Inspector</span>
+            <h3 id="detailTitle">Select any component on the left</h3>
+          </div>
+          <div class="card-body" id="detailContent">
+            <p class="placeholder-text">Click on any module—such as the <strong>Lattice Core MDS</strong>, <strong>RonDB Cluster</strong>, or <strong>Flex Files DS Nodes</strong>—to inspect its source code files, protocol bindings, concurrency guarantees, and memory layout.</p>
+            <div class="quick-facts">
+              <div class="fact-box">
+                <span class="fact-num">1 to 1000+</span>
+                <span class="fact-desc">Active MDS daemons without a central master</span>
+              </div>
+              <div class="fact-box">
+                <span class="fact-num">1 Txn</span>
+                <span class="fact-desc">Every metadata mutation commits in a single NDB txn</span>
+              </div>
+              <div class="fact-box">
+                <span class="fact-num">0 Patches</span>
+                <span class="fact-desc">Unmodified Linux kernel clients & commodity knfsd servers</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: INTERACTIVE PROTOCOL FLOW SIMULATOR -->
+    <section id="tab-protocol" class="tab-panel">
+      <div class="section-intro">
+        <h2>pNFS Flex Files I/O Lifecycle Simulator</h2>
+        <p>Walk through the complete lifecycle of a file request: from client lookup and layout generation to direct data streaming and asynchronous garbage collection.</p>
+      </div>
+
+      <div class="protocol-container">
+        <!-- Step Navigation Controls -->
+        <div class="flow-steps-nav">
+          <button class="flow-step-btn active" data-step="1">
+            <span class="step-num">1</span>
+            <span class="step-text">Discovery & Referrals</span>
+          </button>
+          <button class="flow-step-btn" data-step="2">
+            <span class="step-num">2</span>
+            <span class="step-text">OPEN & Fused LAYOUTGET</span>
+          </button>
+          <button class="flow-step-btn" data-step="3">
+            <span class="step-num">3</span>
+            <span class="step-text">Direct DS Parallel I/O</span>
+          </button>
+          <button class="flow-step-btn" data-step="4">
+            <span class="step-num">4</span>
+            <span class="step-text">Commit & Return</span>
+          </button>
+          <button class="flow-step-btn" data-step="5">
+            <span class="step-num">5</span>
+            <span class="step-text">Async Stripe GC</span>
+          </button>
+        </div>
+
+        <div class="flow-display-card card">
+          <div class="flow-visual-box" id="flowVisualArea">
+            <!-- Dynamically populated visual animated scene -->
+          </div>
+          <div class="flow-explanation-box">
+            <div class="step-badge" id="stepBadge">PHASE 1 OF 5</div>
+            <h3 id="stepHeading">NFSv4 Referrals & Client Discovery</h3>
+            <div class="step-description" id="stepDesc">Loading...</div>
+            <div class="step-code-preview">
+              <div class="code-header">
+                <span id="codeFileName">Protocol Wire Representation</span>
+                <button class="copy-btn" onclick="copyStepCode()">Copy Spec</button>
+              </div>
+              <pre><code id="stepCodeBlock"></code></pre>
+            </div>
+            <div class="flow-actions">
+              <button class="btn btn-secondary" id="btnPrevStep" onclick="navigateStep(-1)" disabled>Previous Phase</button>
+              <button class="btn btn-primary" id="btnNextStep" onclick="navigateStep(1)">Next Phase</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: WORKLOAD & BOTTLENECK LAB -->
+    <section id="tab-workload" class="tab-panel">
+      <div class="section-intro">
+        <h2>Scale & Bottleneck Simulation Lab</h2>
+        <p>Compare performance under high-concurrency AI training and HPC checkpoint workloads across Traditional NFS, Traditional pNFS, and pNFS-Lattice.</p>
+      </div>
+
+      <div class="lab-container">
+        <!-- Controls Sidebar -->
+        <div class="lab-controls card">
+          <h3>Workload Parameters</h3>
+
+          <div class="control-group">
+            <label>Storage Architecture: <span id="labelMode" class="badge highlight">pNFS-Lattice</span></label>
+            <div class="radio-pill-group">
+              <label class="radio-pill">
+                <input type="radio" name="simArch" value="trad_nfs" onchange="runSimulation()">
+                <span>Traditional NFS</span>
+              </label>
+              <label class="radio-pill">
+                <input type="radio" name="simArch" value="trad_pnfs" onchange="runSimulation()">
+                <span>Traditional pNFS</span>
+              </label>
+              <label class="radio-pill">
+                <input type="radio" name="simArch" value="lattice" checked onchange="runSimulation()">
+                <span>pNFS-Lattice</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label-row">
+              <label>Compute / GPU Clients:</label>
+              <span class="control-val" id="valClients">2,000</span>
+            </div>
+            <input type="range" id="sliderClients" min="50" max="10000" step="50" value="2000" oninput="runSimulation()">
+            <span class="control-hint">Simulates distributed PyTorch DataLoader workers & checkpoint dumps.</span>
+          </div>
+
+          <div class="control-group" id="groupMds">
+            <div class="control-label-row">
+              <label>Lattice MDS Daemons:</label>
+              <span class="control-val" id="valMds">8</span>
+            </div>
+            <input type="range" id="sliderMds" min="1" max="64" step="1" value="8" oninput="runSimulation()">
+            <span class="control-hint">Active-Active user space daemons sharing RonDB catalogue.</span>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label-row">
+              <label>Data Servers (DS Nodes):</label>
+              <span class="control-val" id="valDs">16</span>
+            </div>
+            <input type="range" id="sliderDs" min="2" max="64" step="2" value="16" oninput="runSimulation()">
+            <span class="control-hint">Unpatched knfsd nodes providing striping bandwidth.</span>
+          </div>
+        </div>
+
+        <!-- Simulation Results Dashboard -->
+        <div class="lab-results card">
+          <div class="results-header">
+            <h3>Live Telemetry Projection</h3>
+            <span class="badge" id="bottleneckBadge">Zero Bottleneck</span>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-label">Metadata Throughput</div>
+              <div class="metric-value" id="resIops">760,000 <span class="unit">IOPS</span></div>
+              <div class="metric-bar-bg"><div class="metric-bar" id="barIops" style="width: 85%;"></div></div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Aggregate Data Bandwidth</div>
+              <div class="metric-value" id="resBandwidth">192.0 <span class="unit">GB/s</span></div>
+              <div class="metric-bar-bg"><div class="metric-bar success" id="barBandwidth" style="width: 75%;"></div></div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Average Metadata Latency</div>
+              <div class="metric-value" id="resLatency">0.12 <span class="unit">ms</span></div>
+              <div class="metric-bar-bg"><div class="metric-bar purple" id="barLatency" style="width: 20%;"></div></div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Directory Lock Contention</div>
+              <div class="metric-value" id="resContention">Atomic Tuple <span class="unit">(0.0% stalls)</span></div>
+              <div class="metric-bar-bg"><div class="metric-bar highlight" id="barContention" style="width: 5%;"></div></div>
+            </div>
+          </div>
+
+          <div class="bottleneck-explanation-box" id="bottleneckExplanation">
+            <!-- Dynamic explanation text -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: DEEP STUDY MODULES -->
+    <section id="tab-study" class="tab-panel">
+      <div class="section-intro">
+        <h2>Comprehensive Technical Syllabus</h2>
+        <p>In-depth conceptual breakdowns of Parallel NFS, RFC 8435 Flex Files, and the RonDB-backed Lattice architecture.</p>
+      </div>
+
+      <div class="study-layout">
+        <aside class="study-sidebar card">
+          <ul class="topic-list" id="topicList">
+            <!-- Populated via JS -->
+          </ul>
+        </aside>
+        <article class="study-content card" id="studyContentArea">
+          <div class="study-header">
+            <span class="badge" id="topicSubtitle">NFS Standards</span>
+            <h2 id="topicTitle">Select a topic from the sidebar</h2>
+          </div>
+          <div class="study-body" id="topicBody">
+            <p>Loading study curriculum...</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- TAB 5: FLASHCARDS -->
+    <section id="tab-flashcards" class="tab-panel">
+      <div class="section-intro">
+        <h2>Interactive Concept Flashcards</h2>
+        <p>Reinforce your mastery of key protocol concepts, memory models, database internals, and RFC specifications.</p>
+      </div>
+
+      <div class="flashcard-deck">
+        <div class="flashcard-status">
+          <span>Card <strong id="cardCurrentNum">1</strong> of <strong id="cardTotalNum">10</strong></span>
+          <span class="badge" id="cardCategory">Architecture</span>
+        </div>
+
+        <div class="flashcard-wrapper" onclick="flipFlashcard()">
+          <div class="flashcard" id="activeFlashcard">
+            <div class="flashcard-face flashcard-front">
+              <div class="card-prompt">QUESTION / ARCHITECTURAL CHALLENGE</div>
+              <div class="card-text" id="cardFrontText">What are the decoupled roles in pNFS?</div>
+              <div class="card-hint">Click card to reveal architectural answer ↻</div>
+            </div>
+            <div class="flashcard-face flashcard-back">
+              <div class="card-prompt">ANSWER / ARCHITECTURAL MECHANISM</div>
+              <div class="card-text" id="cardBackText">The Metadata Server (MDS) handles namespace and layouts; Data Servers (DS) handle direct storage I/O.</div>
+              <div class="card-hint">Click card to flip back ↻</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flashcard-controls">
+          <button class="btn btn-secondary" onclick="prevFlashcard()">← Previous</button>
+          <button class="btn btn-primary" onclick="flipFlashcard()">Flip Card</button>
+          <button class="btn btn-secondary" onclick="nextFlashcard()">Next →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: EXAM QUIZ -->
+    <section id="tab-quiz" class="tab-panel">
+      <div class="section-intro">
+        <h2>pNFS & Lattice Certification Knowledge Check</h2>
+        <p>Test your understanding of scale-out metadata, database transactions, memory management, and deployment topologies.</p>
+      </div>
+
+      <div class="quiz-container card">
+        <div id="quizIntroState">
+          <div class="quiz-hero">
+            <div class="quiz-badge">8 QUESTIONS</div>
+            <h3>Mastery Verification Exam</h3>
+            <p>Topics include RFC 5661/7862/8435, RonDB single-transaction atomicity, Wave-2 heap scratch, find-API predicate pushdown, and HPC-Shared wide striping.</p>
+            <button class="btn btn-primary btn-large" onclick="startQuiz()">Begin Quiz Now</button>
+          </div>
+        </div>
+
+        <div id="quizActiveState" style="display: none;">
+          <div class="quiz-progress-bar">
+            <div class="quiz-progress-fill" id="quizProgressFill" style="width: 12.5%;"></div>
+          </div>
+          <div class="quiz-header-row">
+            <span class="quiz-step" id="quizStepText">Question 1 of 8</span>
+            <span class="quiz-score-badge">Score: <strong id="quizLiveScore">0</strong></span>
+          </div>
+
+          <h3 class="quiz-question" id="quizQuestionText">Loading question...</h3>
+
+          <div class="quiz-options-list" id="quizOptionsList">
+            <!-- Populated via JS -->
+          </div>
+
+          <div class="quiz-explanation-card" id="quizExplanationCard" style="display: none;">
+            <div class="expl-title" id="explTitle">Correct!</div>
+            <div class="expl-body" id="explText">Explanation text...</div>
+            <button class="btn btn-primary" id="btnNextQuiz" onclick="nextQuestion()">Next Question →</button>
+          </div>
+        </div>
+
+        <div id="quizResultState" style="display: none;">
+          <div class="quiz-hero">
+            <div class="score-circle">
+              <span id="quizFinalPercent">100%</span>
+            </div>
+            <h3 id="quizResultTitle">Outstanding Performance!</h3>
+            <p id="quizResultSummary">You have mastered the architecture of pNFS and pNFS-Lattice.</p>
+            <button class="btn btn-secondary btn-large" onclick="startQuiz()">Retake Quiz</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 7: LATTICE CLI SANDBOX -->
+    <section id="tab-terminal" class="tab-panel">
+      <div class="section-intro">
+        <h2>Interactive Lattice CLI & find-API Sandbox</h2>
+        <p>Experiment with simulated Lattice admin commands, RonDB table inspectors, layout dumps, and predicate pushdown queries.</p>
+      </div>
+
+      <div class="terminal-card card">
+        <div class="terminal-bar">
+          <div class="terminal-dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+          <div class="terminal-title">bash — mds-admin@lattice-cluster-01</div>
+        </div>
+        <div class="terminal-screen" id="terminalScreen" onclick="focusTerminalInput()">
+          <div class="terminal-output" id="terminalOutput">
+Welcome to the pNFS-Lattice Simulated Management Console (v1.0.0).
+Type 'help' to view available diagnostic, administrative, and query commands.
+          </div>
+          <div class="terminal-input-row">
+            <span class="prompt-prefix">admin@lattice-node-01:~$</span>
+            <input type="text" id="terminalInput" autocomplete="off" spellcheck="false" placeholder="Type a command (e.g., 'help', 'mds-status', 'mds-find --size +1G')...">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 8: GLOSSARY -->
+    <section id="tab-glossary" class="tab-panel">
+      <div class="section-intro">
+        <h2>Technical Glossary & Specification Index</h2>
+        <p>Authoritative definitions for all pNFS, Flex Files, RonDB, and Lattice storage engineering concepts.</p>
+      </div>
+
+      <div class="glossary-card card">
+        <div class="search-box">
+          <input type="text" id="glossarySearch" placeholder="Search glossary terms (e.g., 'Flex Files', 'RonDB', 'interpretedUpdateTuple')..." oninput="filterGlossary()">
+        </div>
+        <div class="glossary-grid" id="glossaryGrid">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div><strong>pNFS-Lattice Study Companion</strong> &bull; Open-source scalable metadata architecture</div>
+      <div class="footer-links">
+        <span>RFC 5661</span> &bull; <span>RFC 7862</span> &bull; <span>RFC 8435</span> &bull; <span>PEAK:AIO / LANL / CMU</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
